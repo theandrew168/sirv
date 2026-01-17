@@ -820,15 +820,15 @@ brotli('should be preferred when "Accept-Encoding" allows both', async () => {
 	}
 });
 
-brotli('should not set "Vary: Accept-Encoding" when a compressed version of the requested file does not exist', async () => {
+brotli('should set "Vary: Accept-Encoding" when a compressed version of the requested file exists', async () => {
 	let server = utils.http({ brotli: true });
 	let headers = { 'Accept-Encoding': 'br,gzip' };
 
 	try {
-		let res = await server.send('GET', '/not-compressed.txt', { headers });
-		assert.is(res.headers['content-type'], 'text/plain');
-		assert.is(res.headers['vary'], undefined);
-		assert.is(res.data, 'not-compressed.txt\n');
+		let res = await server.send('GET', '/index.html', { headers });
+		assert.is(res.headers['content-type'], 'text/html;charset=utf-8');
+		assert.is(res.headers['vary'], 'Accept-Encoding');
+		assert.is(res.data, 'brotli html\n');
 		assert.is(res.statusCode, 200);
 	} finally {
 		server.close();
@@ -844,6 +844,21 @@ brotli('should not set "Vary: Accept-Encoding" when a compressed file is request
 		assert.is(res.headers['content-type'], 'text/html;charset=utf-8');
 		assert.is(res.headers['vary'], undefined);
 		assert.is(res.data, 'brotli html\n');
+		assert.is(res.statusCode, 200);
+	} finally {
+		server.close();
+	}
+});
+
+brotli('should not set "Vary: Accept-Encoding" when a compressed version of the requested file does not exist', async () => {
+	let server = utils.http({ brotli: true });
+	let headers = { 'Accept-Encoding': 'br,gzip' };
+
+	try {
+		let res = await server.send('GET', '/no-compressed-version.txt', { headers });
+		assert.is(res.headers['content-type'], 'text/plain');
+		assert.is(res.headers['vary'], undefined);
+		assert.is(res.data, 'no-compressed-version.txt\n');
 		assert.is(res.statusCode, 200);
 	} finally {
 		server.close();
@@ -915,15 +930,15 @@ gzip('should defer to brotli when "Accept-Encoding" allows both', async () => {
 	}
 });
 
-gzip('should not set "Vary: Accept-Encoding" when a compressed version of the requested file does not exist', async () => {
+gzip('should set "Vary: Accept-Encoding" when a compressed version of the requested file exists', async () => {
 	let server = utils.http({ gzip: true });
 	let headers = { 'Accept-Encoding': 'br,gzip' };
 
 	try {
-		let res = await server.send('GET', '/not-compressed.txt', { headers });
-		assert.is(res.headers['content-type'], 'text/plain');
-		assert.is(res.headers['vary'], undefined);
-		assert.is(res.data, 'not-compressed.txt\n');
+		let res = await server.send('GET', '/index.html', { headers });
+		assert.is(res.headers['content-type'], 'text/html;charset=utf-8');
+		assert.is(res.headers['vary'], 'Accept-Encoding');
+		assert.is(res.data, 'gzip html\n');
 		assert.is(res.statusCode, 200);
 	} finally {
 		server.close();
@@ -939,6 +954,21 @@ gzip('should not set "Vary: Accept-Encoding" when a compressed file is requested
 		assert.is(res.headers['content-type'], 'text/html;charset=utf-8');
 		assert.is(res.headers['vary'], undefined);
 		assert.is(res.data, 'gzip html\n');
+		assert.is(res.statusCode, 200);
+	} finally {
+		server.close();
+	}
+});
+
+gzip('should not set "Vary: Accept-Encoding" when a compressed version of the requested file does not exist', async () => {
+	let server = utils.http({ gzip: true });
+	let headers = { 'Accept-Encoding': 'br,gzip' };
+
+	try {
+		let res = await server.send('GET', '/no-compressed-version.txt', { headers });
+		assert.is(res.headers['content-type'], 'text/plain');
+		assert.is(res.headers['vary'], undefined);
+		assert.is(res.data, 'no-compressed-version.txt\n');
 		assert.is(res.statusCode, 200);
 	} finally {
 		server.close();
